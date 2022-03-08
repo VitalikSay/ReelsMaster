@@ -3,20 +3,6 @@ from collections import defaultdict
 from Reelset_info import ReelData, SymbolData, WeightData
 
 
-def MakeSymbolData(window_size: list, sp_symbols: list, dist_between_sp_symbols: list,
-                 common_symbols: list):
-    symb_data = SymbolData()
-    symb_data.SetWindowSize(window_size[0], window_size[1])
-    symb_data.SetSpecialSymbolsInfo(sp_symbols, dist_between_sp_symbols)
-    symb_data.SetCommonSymbolsInfo(common_symbols)
-    return symb_data
-
-def MakeWeightData(weight_percentage: list, weight_patterns: list):
-    wei_data = WeightData()
-    wei_data.SetWeightInfo(weight_patterns, weight_percentage)
-    return wei_data
-
-
 def ReadSettings(settings_path):
 
     inp_file = open(settings_path, 'r')
@@ -186,24 +172,32 @@ def ReadSettings(settings_path):
         #################### ЧИТАЕМ ПАТТЕРНЫ ВЕСОВ ############################################################
             for u in range(window_height):
                 res = re.findall(r'\[[^\[^\]]{1,100}\]', lines[line_ind])
-                if (not res):
+                if not res:
                     print("ERROR in reading patterns for reel ", j, " in position ", u)
                     return 0
                 if not pat_cre:
                     weight_patterns[j] = ([[] for _ in range(len(res))])
                     pat_cre = True
                 for p, item in enumerate(res):
+                    r = re.match(r'\d{1,3}-\d{1,3}', item[1:-1])
                     if '+' in item:
                         weight_patterns[j][p].append([-1])
+
+                    elif r:
+                        ranges = [int(t) for t in r.group(0).split('-')]
+                        weight_patterns[j][p].append([*range(ranges[0], ranges[1] + 1)])
+
                     else:
                         weight_patterns[j][p].append([int(e) for e in item[1:-1].split(',')])
 
                 res = None
                 line_ind += 1
-
-
-
             pat_cre = False
+        ####################################################################################################
+
+
+
+        ####################### ДОБАВЛЯЕМ ЗАЦИКЛИВАНИЕ #####################################################
         for reel_ind, item in enumerate(loop_pattern_indexes):
             step = 0
             if not item:
@@ -232,5 +226,72 @@ def ReadSettings(settings_path):
     return Reel_Data
 
 
-t = ReadSettings('symbol_settings.txt')
-t.PrintMode()
+def ReadReel(reelset_path: str, board_width: int):
+    inp_file = open(reelset_path, 'r')
+    row_lines = inp_file.readlines()
+    row_lines[-1] = row_lines[-1] + "\n"
+    lines = []
+    number_of_reels = 0
+    number_of_reelsets = 0
+    reelset_settings_index = []
+
+    ############# ЧИСТИМ ВХОДНОЙ ФАЙЛИК ОТ КОММЕНТАРИЕВ И ПУСТЫХ СТРОЧЕК #####################
+    i = 0
+    while (i != len(row_lines)):
+        if row_lines[i][-1] == '\n':
+            line = row_lines[i][:-1]  # Убрали \n
+        for j in range(len(line)):  # Убираем комметарий со строки
+            if line[j] == "#":
+                line = row_lines[i][:j]
+                break
+        if line == "":  # Если осталась только пустота, то пропускаем эту строчку
+            del row_lines[i]
+            continue
+        if "reelset" in line.lower():
+            number_of_reelsets += 1
+            reelset_settings_index.append(i)
+        if "reel" in line.lower():
+            number_of_reels += 1
+        i += 1
+        lines.append(line)
+
+    ##########################################################################################
+
+    if (number_of_reels / number_of_reelsets) != board_width:
+        print("ERROR: Wrong reels. The number of reels is not equal to the width of the board in the settings")
+        return 0
+
+    i = 0
+    while i != len(lines):
+        if number_of_reelsets != 0:
+            for j in reelset_settings_index:
+                pass
+
+
+
+
+def ReadReelsetSettings(line):
+    line = line.lower()
+    reel_name = ''
+    betsindices = ''
+    range = 0
+    isFortuneBet = False
+    isMainCycle = True
+    isStartScreen = True
+    sectionName = ""
+    section = -1
+
+    res = re.search(r'reelname\s?=\s?"([^"]*)"', line)
+    if res:
+        reel_name = res
+        print(reel_name)
+    res = None
+
+    pass
+
+
+
+
+#ReadReelsetSettings('<Reelset reelName="(0) Base Game Scatter Trigger" betsIndices="3" range="0 6320" isFortuneBet="false" isMainCycle="true" isStartScreen="true" sectionName="Base Game" section="0">')
+#t = ReadSettings('symbol_settings.txt')
+#t.PrintMode()
