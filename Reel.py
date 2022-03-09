@@ -37,7 +37,7 @@ class Reel():
 
     def _PrintPattern(self, pattern):
         for i, row_pat in enumerate(pattern):
-            print("Row ", i, ": ",row_pat , sep='')
+            print("Row ", i, ": ", row_pat, sep='')
 
     def _CheckWeightPatternsCounter(self,):  # True - все ок, False - каие-то паттерны отсутствуют
         no_pattern_indexes = []
@@ -66,7 +66,7 @@ class Reel():
 
 
     def _FindPatternsInReels(self, weight_patterns, window_height):
-        for i, pattern in weight_patterns:
+        for i, pattern in enumerate(weight_patterns):
             self.pattern_counter[i] = 0
         for i in range(len(self.symbols)):
             window = self.TakeWindow(i, window_height)
