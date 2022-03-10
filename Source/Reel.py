@@ -9,14 +9,22 @@ class Reel():
         self.ln = 0
         self.number_of_stacks = 0
         self.index = ind
-        self.pattern_counter = defaultdict(int)
-        self.pattern_indexes = defaultdict(list)
+        self._pattern_counter = defaultdict(int)
+        self._pattern_indexes = defaultdict(list)
 
 
     def SetSymbols(self, symbols):
         self.symbols = symbols
         self.ln = len(self.symbols)
         self.weights = [1 for _ in range(self.ln)]
+
+    def SetWeights(self, weights):
+        self.weights = weights
+        if not self.symbols:
+            print("Symbols for these weights are not set, symbols will be a list of ones")
+            self.symbols = [1 for _ in range(len(weights))]
+            self.ln = len(self.weights)
+
 
 
     def MakeReel(self, common_symbols, sp_symbols, dist_between_sp_symbols, window_height):
@@ -39,9 +47,9 @@ class Reel():
         for i, row_pat in enumerate(pattern):
             print("Row ", i, ": ", row_pat, sep='')
 
-    def _CheckWeightPatternsCounter(self,):  # True - все ок, False - каие-то паттерны отсутствуют
+    def _CheckWeightPatternsCounter(self):  # True - все ок, False - каие-то паттерны отсутствуют
         no_pattern_indexes = []
-        for pattern_index, pattern_counter in self.pattern_counter:
+        for pattern_index, pattern_counter in self._pattern_counter:
             if pattern_counter == 0:
                 no_pattern_indexes.append(pattern_index)
         print("In reel no such patterns:")
@@ -67,22 +75,22 @@ class Reel():
 
     def _FindPatternsInReels(self, weight_patterns, window_height):
         for i, pattern in enumerate(weight_patterns):
-            self.pattern_counter[i] = 0
+            self._pattern_counter[i] = 0
         for i in range(len(self.symbols)):
             window = self.TakeWindow(i, window_height)
             weight_bool_pattern_vec = self._FindPattern(window, weight_patterns)
             if sum(weight_bool_pattern_vec) == 0:
-                self.pattern_counter[-1] += 1  # Под ключем -1 находятся все окна не подходящие ни под один из паттернов
-                self.pattern_indexes[-1].append(i)
+                self._pattern_counter[-1] += 1  # Под ключем -1 находятся все окна не подходящие ни под один из паттернов
+                self._pattern_indexes[-1].append(i)
             else:
                 true_index = weight_bool_pattern_vec.index(True)
-                self.pattern_counter[true_index] += 1
-                self.pattern_indexes[true_index].append(i)
+                self._pattern_counter[true_index] += 1
+                self._pattern_indexes[true_index].append(i)
 
 
     def _CompareWeightsAndPatternCounter(self, weight_of_patterns):
         for i, weight in enumerate(weight_of_patterns):
-            if weight < self.pattern_counter[i]:
+            if weight < self._pattern_counter[i]:
                 return False
         return True
 
@@ -103,7 +111,7 @@ class Reel():
         weights_of_patterns = []
         for percent in weight_percentage:
             weights_of_patterns.append(percent * weight_to_input / 100)
-        while (weight_of_not_patterns < self.pattern_counter[-1] and
+        while (weight_of_not_patterns < self._pattern_counter[-1] and
                (not self._CompareWeightsAndPatternCounter(weights_of_patterns))):
             weight_to_input *= 10
             weight_of_not_patterns = int(weight_to_input * percents_of_not_patterns / 100)
@@ -113,13 +121,13 @@ class Reel():
         print(weight_to_input)
 
         while(weight_of_not_patterns != 0):
-            for window_index in self.pattern_indexes[-1]:
+            for window_index in self._pattern_indexes[-1]:
                 self.weights[window_index] += 1
                 weight_of_not_patterns -= 1
                 if weight_of_not_patterns == 0:
                     break
 
-        for pattern_index, pattern_index_in_reel in self.pattern_indexes.items():
+        for pattern_index, pattern_index_in_reel in self._pattern_indexes.items():
             weight = weights_of_patterns[pattern_index]
             while(weight != 0):
                 for window_index in pattern_index_in_reel:
@@ -310,18 +318,25 @@ class Reel():
         return reel, sp_symbols_list
 
 
-r = Reel(0)
-d = {}
-d[0] = [[3, 1], [2, 2], [1, 3]]
-d[1] = [[3, 1], [2, 2], [1, 3]]
-d[2] = [[3, 1], [2, 2], [1, 3]]
-d[3] = [[3, 1], [2, 2], [1, 3]]
+if __name__ == "__main__":
+    r = Reel(0)
+    d = {}
+    d[0] = [[10, 1], [5, 2], [3, 3]]
+    d[1] = [[10, 1], [5, 2], [3, 3]]
+    d[2] = [[10, 1], [5, 2], [3, 3]]
+    d[3] = [[10, 1], [5, 2], [3, 3]]
+    d[4] = [[10, 1], [5, 2], [3, 3]]
+    d[5] = [[10, 1], [5, 2], [3, 3]]
+    d[6] = [[10, 1], [5, 2], [3, 3]]
+    d[7] = [[10, 1], [5, 2], [3, 3]]
+    d[8] = [[10, 1], [5, 2], [3, 3]]
+    d[9] = [[10, 1], [5, 2], [3, 3]]
 
-s = {}
-s[10] = [[20, 1]]
-r.MakeReel(d, s, 4, 3)
-percent = [10, 50, 35]
-patterns = [[[10], [2,3], [2,3]], [[1,2,3], [2], [3]], [[2], [3], [1,2,3]]]
-r.MakeWeights(patterns, percent, 3)
-print(r.symbols)
-print(r.weights)
+    s = {}
+    s[10] = [[20, 1]]
+    r.MakeReel(d, s, 4, 3)
+    percent = [10, 50, 35]
+    patterns = [[[10], [1,2,3,4,5,6,7,8,9], [1,2,3,4,5,6,7,8,9]], [[1,2,3], [4,5,6], [7,8,9]], [[7,8,9], [5,6], [1,2,3]]]
+    r.MakeWeights(patterns, percent, 3)
+    print(r.symbols)
+    print(r.weights)

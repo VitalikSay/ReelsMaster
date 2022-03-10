@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from Reelset_info import ReelData, SymbolData, WeightData
+from ReelData import ReelData
 
 
 def ReadSettings(settings_path):
@@ -247,10 +247,10 @@ def ReadReel(reelset_path: str, board_width: int):
         if line == "":  # Если осталась только пустота, то пропускаем эту строчку
             del row_lines[i]
             continue
-        if "reelset" in line.lower():
+        if "<reelset " in line.lower():
             number_of_reelsets += 1
             reelset_settings_index.append(i)
-        if "reel" in line.lower():
+        if "<reel>" in line.lower():
             number_of_reels += 1
         i += 1
         lines.append(line)
@@ -258,14 +258,30 @@ def ReadReel(reelset_path: str, board_width: int):
     ##########################################################################################
 
     if (number_of_reels / number_of_reelsets) != board_width:
+        print(number_of_reels / number_of_reelsets)
         print("ERROR: Wrong reels. The number of reels is not equal to the width of the board in the settings")
         return 0
 
-    i = 0
-    while i != len(lines):
-        if number_of_reelsets != 0:
-            for j in reelset_settings_index:
-                pass
+    reelset_settings = []
+    for j in reelset_settings_index:
+        reelset_settings_line = lines[j]
+        reelset_settings.append(ReadReelsetSettings(reelset_settings_line))
+
+    symbols_weights_by_reelsets = [] # [[[[symbols], [weights]], [], [], [], []], [], [], []]
+    for reelset_index in reelset_settings_index:
+        current_index = reelset_index
+        reels = []
+        for reel_index in range(board_width):
+            current_index += 2 # Пропускаем <Reel>
+            symbols = ReadReelSymbols(lines[current_index])
+            current_index += 1
+            weights = ReadReelWeights(lines[current_index])
+            current_index += 1
+            reels.append([symbols, weights])
+        symbols_weights_by_reelsets.append(reels)
+    print(symbols_weights_by_reelsets)
+
+
 
 
 
@@ -273,25 +289,96 @@ def ReadReel(reelset_path: str, board_width: int):
 def ReadReelsetSettings(line):
     line = line.lower()
     reel_name = ''
-    betsindices = ''
-    range = 0
-    isFortuneBet = False
-    isMainCycle = True
-    isStartScreen = True
-    sectionName = ""
-    section = -1
+    reel_betsindices = []
+    reel_range = [0, 0]
+    reel_isfortunefet = False
+    reel_ismaincycle = True
+    reel_isstartscreen = True
+    reel_sectionname = ""
+    reel_section = -1
 
     res = re.search(r'reelname\s?=\s?"([^"]*)"', line)
     if res:
-        reel_name = res
+        raw_line = res.group()
+        reel_name = raw_line[raw_line.index('"')+1:-1]
         print(reel_name)
     res = None
 
-    pass
+    res = re.search(r'betsindices\s?=\s?"([^"]*)"', line)
+    if res:
+        raw_line = res.group()
+        reel_betsindices = [int(num) for num in raw_line[raw_line.index('"') + 1:-1].split()]
+        print(reel_betsindices)
+    res = None
+
+    res = re.search(r'range\s?=\s?"([^"]*)"', line)
+    if res:
+        raw_line = res.group()
+        reel_range = [int(num) for num in raw_line[raw_line.index('"') + 1:-1].split()]
+        print(reel_range)
+    res = None
+
+    res = re.search(r'isfortunebet\s?=\s?"([^"]*)"', line)
+    if res:
+        raw_line = res.group()
+        reel_isfortunebet = True if raw_line[raw_line.index('"') + 1:-1][0] == 't' else False
+        print(reel_isfortunebet)
+    res = None
+
+    res = re.search(r'ismaincycle\s?=\s?"([^"]*)"', line)
+    if res:
+        raw_line = res.group()
+        reel_ismaincycle = True if raw_line[raw_line.index('"') + 1:-1][0] == 't' else False
+        print(reel_ismaincycle)
+    res = None
+
+    res = re.search(r'isstartscreen\s?=\s?"([^"]*)"', line)
+    if res:
+        raw_line = res.group()
+        reel_isstartscreen = True if raw_line[raw_line.index('"') + 1:-1][0] == 't' else False
+        print(reel_isstartscreen)
+    res = None
+
+    res = re.search(r'isfreespin\s?=\s?"([^"]*)"', line)
+    if res:
+        raw_line = res.group()
+        reel_isfreespin = True if raw_line[raw_line.index('"') + 1:-1][0] == 't' else False
+        print(reel_isfreespin)
+    res = None
+
+    res = re.search(r'sectionname\s?=\s?"([^"]*)"', line)
+    if res:
+        raw_line = res.group()
+        reel_sectionname = raw_line[raw_line.index('"') + 1:-1]
+        print(reel_sectionname)
+    res = None
+
+    res = re.search(r'section\s?=\s?"([^"]*)"', line)
+    if res:
+        raw_line = res.group()
+        reel_section = int(raw_line[raw_line.index('"') + 1:-1])
+        print(reel_section)
+    res = None
+
+    return reel_name, reel_betsindices, reel_range, reel_isfortunefet, reel_ismaincycle, reel_isstartscreen, reel_sectionname, reel_section
+
+def ReadReelSymbols(line):
+    line = line.lower()
+    symbols = []
+    res = re.search(r'<symbols>.{1,2000}</symbols>', line)
+    if res:
+        symbols = [int(num) for num in res.group()[9:-10].split(',')]
+    return symbols
+
+def ReadReelWeights(line):
+    line = line.lower()
+    weights = []
+    res = re.search(r'<weights>.{1,2000}</weights>', line)
+    if res:
+        weights = [int(num) for num in res.group()[9:-10].split(',')]
+    return weights
 
 
+if __name__ == "__main__":
+    ReadReel("../Reels/PoL/Reelset.txt", 5)
 
-
-#ReadReelsetSettings('<Reelset reelName="(0) Base Game Scatter Trigger" betsIndices="3" range="0 6320" isFortuneBet="false" isMainCycle="true" isStartScreen="true" sectionName="Base Game" section="0">')
-#t = ReadSettings('symbol_settings.txt')
-#t.PrintMode()

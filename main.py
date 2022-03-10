@@ -1,16 +1,11 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+from Source.Read_input import ReadSettings, ReadReel, ReadReelsetSettings, ReadReelSymbols, ReadReelWeights
+from Source.ReelData import ReelData
+from Source.Reelset import Reelset
+from Source.Reel import Reel
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+GAME_NAME = "PoL"
+SETTING_FILE_NAME = "symbol_settings" # Только имя, путь и расширение не надо
+REELS_FILE_NAME = "Reelset"
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+reel_data = ReadSettings("Settings"+"/"+GAME_NAME+"/"+SETTING_FILE_NAME+".txt")
