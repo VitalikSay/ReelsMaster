@@ -1,6 +1,6 @@
-from Reel import Reel
-from ReelData import ReelData
-from Read_input import ReadReel
+from Source.Reel import Reel
+from Source.ReelData import ReelData
+from Source.Read_input import ReadReel
 
 
 class Reelset():
@@ -16,9 +16,8 @@ class Reelset():
         self.sectionname = ''
         self.section = 0
 
-    def MakeReel(self, settings_path, reels_path):
+    def MakeReel(self):
         if self.data.working_mode == 0:  # 0 - генерация и рилов и весов; 1 - генерация только рилов; 2 - генерация только весов
-            path = ""
             self.MakeSymbols()
             self.MakeWeights()
         if self.data.working_mode == 1:
@@ -42,7 +41,8 @@ class Reelset():
             return 0
         for i, reel in enumerate(self.reels):
             reel.MakeWeights(self.data.weight_patterns[i],
-                             self.data.weight_percentage[i])
+                             self.data.weight_percentage[i],
+                             self.data.number_of_reels)
 
     def PrintReelset(self):
         pass

@@ -118,7 +118,6 @@ class Reel():
             weights_of_patterns = []
             for percent in enumerate(weight_percentage):
                 weights_of_patterns.append(percent * weight_to_input / 100)
-        print(weight_to_input)
 
         while(weight_of_not_patterns != 0):
             for window_index in self._pattern_indexes[-1]:

@@ -9,3 +9,6 @@ SETTING_FILE_NAME = "symbol_settings" # Только имя, путь и рас�
 REELS_FILE_NAME = "Reelset"
 
 reel_data = ReadSettings("Settings"+"/"+GAME_NAME+"/"+SETTING_FILE_NAME+".txt")
+reelset = Reelset(reel_data)
+reelset.MakeReel()
+print(reelset.reels[0].weights)

@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from ReelData import ReelData
+from Source.ReelData import ReelData
 
 
 def ReadSettings(settings_path):
