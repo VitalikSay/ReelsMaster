@@ -16,21 +16,16 @@ class Reelset():
         self.sectionname = ''
         self.section = 0
 
-    def MakeReelSet(self):
-        if self.data.working_mode == 0:  # 0 - генерация и рилов и весов; 1 - генерация только рилов; 2 - генерация только весов
-            self.MakeSymbols()
-            self.MakeWeights()
-        elif self.data.working_mode == 1:
-            self.MakeSymbols()
-            self.MakeWeights()
-        elif self.data.working_mode == 2:
-            self.MakeSymbols(True)
-            self.MakeWeights()
 
-    def MakeSymbols(self, set_symbols=False):
+    def MakeReelSet(self):
+        self.MakeSymbols()
+        self.MakeWeights()
+
+
+    def MakeSymbols(self):
         for i in range(self.data.number_of_reels):
             current_reel = Reel(i)
-            if not set_symbols:
+            if self.data.working_mode != 2:
                 current_reel.MakeReel(self.data.common_symbols[i],
                                       self.data.special_symbols[i],
                                       self.data.dist_between_sp_symbols[i],
@@ -53,7 +48,6 @@ class Reelset():
                                  self.data.number_of_reels)
 
 
-#"<Reelset reelName="Base" betsIndices="0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22" range="0 999" isFortuneBet="false" isMainCycle="true" isStartScreen="true" isFreeSpin="true" sectionName="Base Game" section="0">"
     def PrintReelset(self):
         reelset_settings_str = ''
         reelset_settings_str += '<Reelset '
@@ -75,23 +69,6 @@ class Reelset():
             self.reels[i].PrintReel("\t\t")
             print('\t</Reel>')
         print("</Reelset>")
-
-
-    def ReadReelset(self, reelset_settings, symbols_weight_list):
-        self.name = reelset_settings[0]
-        self.betsIndices = reelset_settings[1]
-        self.range = reelset_settings[2]
-        self.isFortuneBet = reelset_settings[3]
-        self.isMainCycle = reelset_settings[4]
-        self.isStartScreen = reelset_settings[5]
-        self.sectionname = reelset_settings[6]
-        self.section = reelset_settings[7]
-        for i, symbols, weights in enumerate(symbols_weight_list):
-            reel = Reel(i)
-            reel.SetSymbols(symbols)
-            reel.SetWeights(weights)
-            self.reels.append(reel)
-        return self
 
 
 
