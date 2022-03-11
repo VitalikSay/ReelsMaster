@@ -5,7 +5,7 @@ from Source.ReelData import ReelData
 
 def ReadSettings(settings_path, reels_path):
 
-    inp_file = open(settings_path, 'r')
+    inp_file = open(settings_path, 'r', encoding='utf-8')
     row_lines = inp_file.readlines()
     row_lines[-1] = row_lines[-1] + "\n"
     lines = []
@@ -103,12 +103,12 @@ def ReadSettings(settings_path, reels_path):
 
 
         ###################### ЧИТАЕМ КОЛИЧЕСВО ОБЫЧНЫХ СИМВОЛОВ ##############################
-                res = re.match(r'\d{1,3}', lines[line_ind])
-                if (not res):
-                    print("ERROR in reading number of common symbols in reel ", j)
-                    return 0
-                number_of_common_symbols[j] = int(res.group(0))
-                line_ind += 1
+            res = re.match(r'\d{1,3}', lines[line_ind])
+            if (not res):
+                print("ERROR in reading number of common symbols in reel ", j)
+                return 0
+            number_of_common_symbols[j] = int(res.group(0))
+            line_ind += 1
         ######################################################################################
 
 
@@ -238,7 +238,7 @@ def ReadSettings(settings_path, reels_path):
 
 
 def ReadReel(reelset_path: str, board_width: int):
-    inp_file = open(reelset_path, 'r')
+    inp_file = open(reelset_path, 'r', encoding='utf-8')
     row_lines = inp_file.readlines()
     row_lines[-1] = row_lines[-1] + "\n"
     lines = []
