@@ -2,8 +2,17 @@ class ReelData:
     def __init__(self, working_mode, game_name="test_game", section_name="test_section", short_info="test_info"):
         self.working_mode = working_mode # 0 - генерация и рилов и весов; 1 - генерация только рилов; 2 - генерация только весов
 
+        self.reelset_name = 'Test reelset'
+        self.reelset_betsindices = [1, 2, 3]
+        self.reelset_range = [0, 0]
+        self.reelset_isfortunebet = False
+        self.reelset_ismaincycle = True
+        self.reelset_isstartscreen = True
+        self.reelset_isfreespin = False
+        self.reelset_sectionname = section_name
+        self.reelset_section = -1
+
         self.game_name = game_name  # Это строка
-        self.section_name = section_name # Это строка
         self.short_info = short_info # Можешь написать там коротенькую инфу по рилсету
 
         self.window_height = -1 # Это интегер
@@ -15,6 +24,8 @@ class ReelData:
 
         self.weight_percentage = []  # Список чисел, где каждое число - процент выпадения паттерна на этом риле
         self.weight_patterns = []  # Список из N списков (N - кол-во рилов), в каждом из этих списков M списков (М - высота окна борда)
+
+        self.read_symbol_weights = []  # Для режима работы при котором создаются только веса
         # в каждом из этих списков списки паттернов
         """
         Пример weight_patterns:
@@ -41,7 +52,7 @@ class ReelData:
             return 0
 
         print("\nGame name:", self.game_name)
-        print("Section name:", self.section_name)
+        print("Section name:", self.reelset_sectionname)
         print("Short info:", self.short_info)
         print("Board size:", self.window_height, "x", self.number_of_reels)
 

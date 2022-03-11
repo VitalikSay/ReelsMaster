@@ -4,11 +4,16 @@ from Source.Reelset import Reelset
 from Source.Reel import Reel
 
 
+###################################### НАДО ВОТ ЭТО ЗАДАТЬ ######################################
 GAME_NAME = "PoL"
-SETTING_FILE_NAME = "symbol_settings" # Только имя, путь и расширение не надо
-REELS_FILE_NAME = "Reelset"
+SETTING_FILE_NAME = "symbol_weight_settings"             # Только имя файла в папке Settings, путь и расширение не надо
+REELS_FILE_NAME = "Reelset"                       # Только имя, путь и расширение не надо
+#################################################################################################
 
-reel_data = ReadSettings("Settings"+"/"+GAME_NAME+"/"+SETTING_FILE_NAME+".txt")
+
+
+reel_data = ReadSettings("Settings"+"/"+GAME_NAME+"/"+SETTING_FILE_NAME+".txt",
+                         "Reels"+"/"+GAME_NAME+"/"+REELS_FILE_NAME+".txt")
 reelset = Reelset(reel_data)
-reelset.MakeReel()
-print(reelset.reels[0].weights)
+reelset.MakeReelSet()
+reelset.PrintReelset()
