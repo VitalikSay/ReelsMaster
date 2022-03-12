@@ -14,6 +14,7 @@ REELS_FILE_NAME = "Reelset"                       # Только имя, пут�
 
 reel_data = ReadSettings("Settings"+"/"+GAME_NAME+"/"+SETTING_FILE_NAME+".txt",
                          "Reels"+"/"+GAME_NAME+"/"+REELS_FILE_NAME+".txt")
+
 reelset = Reelset(reel_data)
 reelset.MakeReelSet()
 reelset.PrintReelset()

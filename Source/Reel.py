@@ -12,7 +12,8 @@ class Reel():
         self.index = ind
         self._pattern_counter = defaultdict(int)
         self._pattern_indexes = defaultdict(list)
-        self._weight_to_input = 1000
+        self._weight_to_input = 1000  # Масса которую надо всунуть
+        self._final_input_weight = 0  # Масса которую получилось всунуть
 
 
     def SetSymbols(self, symbols):
@@ -63,7 +64,7 @@ class Reel():
 
 
     def _PrintPatternInfo(self, weight_percentage):
-        print("Reel", self.index, "pattern info: ")
+        print("\nReel", self.index, "(total len", self.ln, ") pattern info: ")
         patterns_available = 0
         for i in range(-1, len(self._pattern_counter)-1):
             if self._pattern_counter[i] > 0:
@@ -72,8 +73,8 @@ class Reel():
                 weigh_perc = 100 - sum(weight_percentage)
             else:
                 weigh_perc = weight_percentage[i]
-            print("\tNumber of Patterns", i, ":", self._pattern_counter[i], "(Weight", int(weigh_perc * self._weight_to_input / 100), ")")
-        print("\tTotal input weight:", self._weight_to_input, " (", patterns_available, "of", len(self._pattern_counter), "patterns available)")
+            print("\tNumber of Patterns", i, ":", self._pattern_counter[i], "  (Weight", int(weigh_perc * self._weight_to_input / 100), ":", '{:.2f}'.format(int(weigh_perc * self._weight_to_input) / self._final_input_weight), "% )")
+        print("\tTotal input weight:", self._final_input_weight, " (", patterns_available, "of", len(self._pattern_counter), "patterns available)")
 
 
     def _PrintPattern(self, pattern):
@@ -144,6 +145,17 @@ class Reel():
         percents_of_not_patterns = 100 - percents_sum
         self.weights = [0 for _ in range(self.ln)]
 
+        ####################### ЕСЛИ НЕТУ ОПРЕДЕЛЕННОГО ПАТТЕРНА, ТО ЕГО МАССА УХОДИТ К НЕ ПАТТЕРНАМ ###################
+        for pat_index, counter in self._pattern_counter.items():
+            if pat_index == -1:
+                if counter == 0:
+                    print("\nWARNING: In reel no windows without patterns, weight will be lost")
+                continue
+            if counter == 0:
+                percents_of_not_patterns += weight_percentage[pat_index]
+                weight_percentage[pat_index] = 0
+        ################################################################################################################
+
         weight_of_not_patterns = int(self._weight_to_input * percents_of_not_patterns / 100)
         weights_of_patterns = []
         for percent in weight_percentage:
@@ -161,6 +173,7 @@ class Reel():
                 break
             for window_index in self._pattern_indexes[-1]:
                 self.weights[window_index] += 1
+                self._final_input_weight += 1
                 weight_of_not_patterns -= 1
                 if weight_of_not_patterns <= 0:
                     break
@@ -174,6 +187,7 @@ class Reel():
             while(weight > 0):
                 for window_index in pattern_index_in_reel:
                     self.weights[window_index] += 1
+                    self._final_input_weight += 1
                     weight -= 1
                     if weight <= 0:
                         break
