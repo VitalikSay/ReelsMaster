@@ -4,6 +4,8 @@ from Source.Reelset import Reelset
 from Source.Reel import Reel
 import os
 
+import time
+start_time = time.time()
 
 ###################################### НАДО ВОТ ЭТО ЗАДАТЬ ######################################
 GAME_NAME = "PoL"
@@ -20,11 +22,8 @@ os.chdir("..")
 
 reel_data = ReadSettings("Settings"+"/"+GAME_NAME+"/"+SETTING_FILE_NAME+".txt",
                          "Reels"+"/"+GAME_NAME+"/"+REELS_FILE_NAME+".txt")
-
 reelset = Reelset(reel_data)
 reelset.MakeReelSet()
 reelset.PrintReelset()
 
-
-
-print("Текущая деректория:", os.getcwd())
+print("\nTime:", '{:.3f}'.format(time.time() - start_time), "seconds")
