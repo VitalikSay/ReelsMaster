@@ -1,10 +1,7 @@
-from Source.Read_input import ReadSettings, ReadReel, ReadReelsetSettings, ReadReelSymbols, ReadReelWeights
-from Source.ReelData import ReelData
-from Source.Reelset import Reelset
-from Source.Reel import Reel
 import os
-
 import time
+from Source.Read_input import ReadSettings
+from Source.Reelset import Reelset
 start_time = time.time()
 
 ###################################### НАДО ВОТ ЭТО ЗАДАТЬ ######################################
