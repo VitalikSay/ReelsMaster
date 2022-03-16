@@ -3,6 +3,117 @@ from collections import defaultdict
 from Source.ReelData import ReelData
 
 
+def ReadClearInpFile(file) -> list:
+    """
+    Чистим сеттинги от комментариев и пустых строчек
+    :param file:
+    :return:
+    """
+    row_lines = file.readlines()
+    row_lines[-1] = row_lines[-1] + "\n"
+    lines = []
+    i = 0
+    while (i != len(row_lines)):
+        if row_lines[i][-1] == '\n':
+            line = row_lines[i][:-1]  # Убрали \n
+        for j in range(len(line)):  # Убираем комметарий со строки
+            if line[j] == "#":
+                line = row_lines[i][:j]
+                break
+        if line == "":  # Если осталась только пустота, то пропускаем эту строчку
+            del row_lines[i]
+            continue
+        i += 1
+        lines.append(line)
+    return lines
+
+
+def ReadWindowSize(line):
+    res = re.match(r'\d{1,3}\s\d{1,3}', line)  # READ WINDOW HEIGHT AND WIDTH
+    if not res:
+        raise AttributeError("ERROR in -> Read_input.py -> ReadWindowSize()")
+    return [int(t) for t in res.group(0).split()]  # (height x width)
+
+
+def SetWorkingMode(lines):
+    working_mode = [False, False, False]  # 0 - генерация и рилов и весов; 1 - генерация только рилов; 2 - генерация только весов
+    if re.match(r'\d{1,3}\s{0,5}\[', lines[2]):
+        if re.match(r'.{0,5}\[\[', lines[-1]):
+            working_mode[0] = True
+        else:
+            working_mode[1] = True
+    else:
+        working_mode[2] = True
+    return working_mode
+
+
+def ReadSpecialSymbolInfo(line):
+    res = re.match(r'\d{1,3}\s\d{1,3}', line)  # Читаем инфо про специальные символы
+    if (not res):
+        raise AttributeError("ERROR in -> Read_input.py -> ReadSpecialSymbolInfo()")
+    return [int(t) for t in res.group(0).split()] # (number_of_sp_symbols, dist_between_sp_symbols)
+
+
+def ReadSpecialSymbolsStack(line):
+    sp_symbol_stacks = []
+    res = re.match(r'\d{1,3}', line)
+    if (not res):
+        raise AttributeError("ERROR in -> Read_input.py -> ReadSpecialSymbolsStack() (reading special symbol error)")
+    cur_sp_symbol = int(res.group(0))
+
+    res = re.findall(r'\[\d{1,3}\s\d{1,3}\]', line)
+    if (not res):
+        raise AttributeError("ERROR in -> Read_input.py -> ReadSpecialSymbolsStack() (reading special symbol stacks error)")
+    for item in res:
+        sp_symbol_stacks.append([int(r) for r in item[1:-1].split()])
+    return cur_sp_symbol, sp_symbol_stacks  # (symbol, stacks) ex: (10, [[5 1], [2,2]])
+
+
+def ReadNumberofCommonSymbols(line):
+    res = re.match(r'\d{1,3}', line)
+    if (not res):
+        raise AttributeError("ERROR in -> Read_input.py -> ReadNumberofCommonSymbols()")
+    return int(res.group(0))
+
+
+def ReadCommonSymbolStack(line):
+    common_symbol_stacks = []
+    res = re.match(r'\d{1,3}', line)
+    if (not res):
+        raise AttributeError("ERROR in -> Read_input.py -> ReadCommonSymbolStack() (reading common symbols error)")
+    cur_common_symbol = int(res.group(0))
+
+    res = re.findall(r'\[\d{1,3}\s\d{1,3}\]', line)
+    if (not res):
+        raise AttributeError("ERROR in -> Read_input.py -> ReadCommonSymbolStack() (reading common symbols stack error)")
+    for item in res:
+        common_symbol_stacks.append([int(r) for r in item[1:-1].split()])
+    return cur_common_symbol, common_symbol_stacks  # (symbol, stacks) ex: (5, [[5 1], [2,2], [1 3])
+
+
+def ReadPatternsPercentage(line):
+    pattern_weights = []
+    loop_pattern_indexes = []
+    res = re.findall(r'(\d{1,3})|(!\d{1,3})', line)
+    if (not res):
+        raise AttributeError("ERROR in -> Read_input.py -> ReadPatternsPercentage()")
+    proc_res = []
+    for tup in res:
+        proc_res.append(tup[bool(tup[1])])
+    res = proc_res
+
+    for i, perc in enumerate(res):
+        if perc[0] == '!':
+            loop_pattern_indexes.append(i)
+        pattern_weights.append(int(perc))
+    return pattern_weights, loop_pattern_indexes
+
+
+def ReadWeightPatterns():
+
+
+
+
 def ReadSettings(settings_path, reels_path):
 
     inp_file = open(settings_path, 'r', encoding='utf-8')
@@ -411,5 +522,6 @@ def ReadReelWeights(line):
 
 
 if __name__ == "__main__":
-    ReadReel("../Reels/PoL/Reelset.txt", 5)
-
+    #ReadReel("../Reels/PoL/Reelset.txt", 5)
+    #ReadWindowSize(['3 5'])
+    print(SetWorkingMode(['','','2 [3 3]', ' 2 [3 3]']))
