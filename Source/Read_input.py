@@ -1,15 +1,27 @@
 import re
+import os
 from collections import defaultdict
 from Source.ReelData import ReelData
 
+def ReadSettings(settings_file_name, reels_file_name):
+    #symbol_lines, weight_lines =
+    #ReadSymbolsSettings()
+    #ReadWeightSettings()
+    pass
 
-def ReadClearInpFile(file) -> list:
+
+def ReadClearInpFile(settings_file_name) -> list:
     """
     Чистим сеттинги от комментариев и пустых строчек
     :param file:
     :return:
     """
+
+    os.chdir("../Settings/" + settings_file_name + ".txt")
+    file = open(settings_file_name + '.txt', 'r', encoding='utf-8')
     row_lines = file.readlines()
+    os.chdir("../Source")
+
     row_lines[-1] = row_lines[-1] + "\n"
     lines = []
     i = 0
@@ -25,6 +37,14 @@ def ReadClearInpFile(file) -> list:
             continue
         i += 1
         lines.append(line)
+    window_height, window_width = ReadWindowSize(lines[0])
+    working_mode = SetWorkingMode(lines)
+    if working_mode[1]:
+        return lines[1:], None
+    elif working_mode[2]:
+        return None, lines[1:]
+    elif working_mode[0]:
+        pass
     return lines
 
 
@@ -109,9 +129,72 @@ def ReadPatternsPercentage(line):
     return pattern_weights, loop_pattern_indexes
 
 
-def ReadWeightPatterns():
+def ReadWeightPatterns(lines):  # Передаем количество линий равное высоте борда
+    number_of_patterns = -1
+    for i, line in enumerate(lines):
+        res = re.findall(r'\[[^\[^\]]{1,100}\]', line)
+        if not res:
+            raise AttributeError("ERROR in -> Read_input.py -> ReadWeightPatterns()")
+        if number_of_patterns == -1:
+            number_of_patterns = len(res)
+            weight_patterns = [[] for _ in range(number_of_patterns)]
+        elif len(res) != number_of_patterns:
+            raise AttributeError("ERROR in -> Read_input.py -> ReadWeightPatterns() Number of patterns not the same at different lines")
+
+        for j, row_pattern in enumerate(res):
+            r = re.match(r'\d{1,3}-\d{1,3}', row_pattern[1:-1])
+            if '+' in row_pattern:
+                weight_patterns[j].append([-1])
+            elif r:
+                ranges = [int(t) for t in r.group(0).split('-')]
+                weight_patterns[j].append([*range(ranges[0], ranges[1] + 1)])
+            else:
+                weight_patterns[j].append([int(e) for e in row_pattern[1:-1].split(',')])
+    if weight_patterns:
+        return weight_patterns
+    else:
+        raise ValueError("ERROR in -> Read_input.py -> ReadWeightPatterns() Weight patterns are not created")
 
 
+def ReadSymbolsSettings(settings_file_name, reels_file_name):
+    lines = ReadClearInpFile(settings_file_name)
+    window_height, window_width = ReadWindowSize(lines[0])
+    current_line_index = 1
+
+    sp_symbols = [defaultdict(list) for _ in range(window_width)]
+    common_symbols = [defaultdict(list) for _ in range(window_width)]
+
+    #number_of_sp_symbols = [-1 for _ in range(number_of_reels)]
+    #dist_between_sp_symbols = [-1 for _ in range(number_of_reels)]
+    #number_of_common_symbols = [-1 for _ in range(number_of_reels)]
+
+
+    for reel_index in range(window_width):
+        number_of_sp_symbols, dist_between_sp_symbols = ReadSpecialSymbolInfo(lines[current_line_index])
+        current_line_index += 1
+        for special_symbol_index in range(number_of_sp_symbols):
+            special_symbol, sp_symbol_stacks = ReadSpecialSymbolsStack(lines[current_line_index])
+            sp_symbols[reel_index][special_symbol] = sp_symbol_stacks
+            current_line_index += 1
+
+        number_of_common_symbols = ReadNumberofCommonSymbols(lines[current_line_index])
+        current_line_index += 1
+        for common_symbol_index in range(number_of_common_symbols):
+            common_symbol, common_symbol_stacks = ReadCommonSymbolStack(lines[current_line_index])
+            common_symbols[reel_index][common_symbol] = common_symbol_stacks
+            current_line_index += 1
+
+
+
+    window_height = -1
+    number_of_reels = -1
+    number_of_sp_symbols = []
+    number_of_common_symbols = []
+    dist_between_sp_symbols = []
+    sp_symbol = -1
+    number_of_sp_symbols = -1
+    dist_between_reel_info = 0
+    weight_percentage = []
 
 
 def ReadSettings(settings_path, reels_path):
