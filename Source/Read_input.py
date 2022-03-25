@@ -3,48 +3,150 @@ import os
 from collections import defaultdict
 from Source.ReelData import ReelData
 
+
 def ReadSettings(settings_file_name, reels_file_name):
-    #symbol_lines, weight_lines =
-    #ReadSymbolsSettings()
-    #ReadWeightSettings()
-    pass
+    raw_settings_lines = ReadSettingsLines(settings_file_name)
+    settings_lines = ReadClearInpFile(raw_settings_lines)
+    working_mode = SetWorkingMode(settings_lines)
+    window_height, window_width = ReadWindowSize(settings_lines[0])
+    del settings_lines[0]  # Удалить строчку с размерами борда
+
+    if working_mode[0]:
+        symbol_lines = FindSymbolSettings(settings_lines)
+        weight_lines = FindPatternSettings(settings_lines)
+        special_symbols, common_symbols = ReadSymbolSettings(symbol_lines, window_width)
+        weight_percentage, weight_patterns = ReadWeightSettings(weight_lines, window_height, window_width)
+        MakeReelDataObject(working_mode, window_height, window_width)
+
+    elif working_mode[1]:
+        symbol_lines = FindSymbolSettings(settings_lines)
+        common_symbols, special_symbols = ReadSymbolSettings(symbol_lines, window_width)
+
+    elif working_mode[2]:
+        weight_lines = FindPatternSettings(settings_lines)
+        weight_percentage, weight_patterns = ReadWeightSettings(weight_lines, window_height, window_width)
 
 
-def ReadClearInpFile(settings_file_name) -> list:
+def MakeReelDataObject(working_mode,
+                       window_height,
+                       window_width,
+                       sp_symbols=None,
+                       dist_between_sp_symbols=None,
+                       common_symbols=None,
+                       weight_percentage=None,
+                       weight_patterns=None,
+                       reelset_settings=None,
+                       symbols_weights=None):
+
+    Reel_Data = ReelData(working_mode.index(True))
+    if working_mode[0]:
+        Reel_Data.SetWindowSize(window_height, window_width)
+        Reel_Data.SetSpecialSymbolsInfo(sp_symbols, dist_between_sp_symbols)
+        Reel_Data.SetCommonSymbolsInfo(common_symbols)
+        Reel_Data.SetWeightInfo(weight_patterns, weight_percentage)
+    elif working_mode[1]:
+        Reel_Data.SetWindowSize(window_height, window_width)
+        Reel_Data.SetSpecialSymbolsInfo(sp_symbols, dist_between_sp_symbols)
+        Reel_Data.SetCommonSymbolsInfo(common_symbols)
+    elif working_mode[2]:
+        Reel_Data.SetWindowSize(window_height, window_width)
+        Reel_Data.SetWeightInfo(weight_patterns, weight_percentage)
+        Reel_Data.read_symbol_weights = symbols_weights[0]
+        Reel_Data.reelset_name = reelset_settings[0][0]
+        Reel_Data.reelset_betsindices = reelset_settings[0][1]
+        Reel_Data.reelset_range = reelset_settings[0][2]
+        Reel_Data.reelset_isfortunebet = reelset_settings[0][3]
+        Reel_Data.reelset_ismaincycle = reelset_settings[0][4]
+        Reel_Data.reelset_isstartscreen = reelset_settings[0][5]
+        Reel_Data.reelset_isstartscreen = reelset_settings[0][6]
+        Reel_Data.reelset_sectionname = reelset_settings[0][7]
+        Reel_Data.reelset_section = reelset_settings[0][8]
+    return Reel_Data
+
+
+def FindSymbolSettings(lines):
+    """
+    :param lines: Отчищеные от пустых строчек сеттинги
+    :return: Возвращает строчки содержащие только настройки символов
+    """
+    first_symb_set_index = len(lines)  # Чтобы если что ошибку выдавало
+    last_symb_set_index = len(lines)
+
+    lines_indexes_with_sp_symbol_info = []
+    for i, line in enumerate(lines):
+        if re.match(r'\s{0,3}\d{1,3} \d{1,3}', line):
+            lines_indexes_with_sp_symbol_info.append(i)
+
+    first_symb_set_index = lines_indexes_with_sp_symbol_info[0]
+    number_of_sp_symbols = int(re.findall(r'\d{1,3}', lines[lines_indexes_with_sp_symbol_info[-1]])[0])
+    number_of_common_symbols = int(re.findall(r'\d{1,3}', lines[(lines_indexes_with_sp_symbol_info[-1] +
+                                                                 number_of_sp_symbols + 1)])[0])
+    last_symb_set_index = (lines_indexes_with_sp_symbol_info[-1] +
+                           number_of_sp_symbols + 1 +
+                           number_of_common_symbols + 1)
+    return lines[first_symb_set_index: last_symb_set_index]
+
+
+def FindPatternSettings(lines):
+    """
+      :param lines: Отчищеные от пустых строчек сеттинги
+      :return: Возвращает строчки содержащие только настройки весов
+      """
+
+    first_pattern_set_index = len(lines)
+    last_pattern_set_index = len(lines)
+
+    lines_indexes_with_patterns = []
+    for i, line in enumerate(lines):
+        if re.match(r'\s{0,3}\[\[', line):
+            lines_indexes_with_patterns.append(i)
+
+    first_pattern_set_index = lines_indexes_with_patterns[0] - 1
+    last_pattern_set_index = lines_indexes_with_patterns[-1] + 1
+
+    return lines[first_pattern_set_index: last_pattern_set_index]
+
+
+def ReadSettingsLines(settings_file_name):
+    os.chdir("../Settings")
+    file = open(settings_file_name + '.txt', 'r', encoding='utf-8')
+    raw_lines = file.readlines()
+    file.close()
+    os.chdir("../Source")
+    return raw_lines
+
+
+def ReadReelsetLines(reelset_file_name):
+    os.chdir("../Reels")
+    file = open(reelset_file_name + '.txt', 'r', encoding='utf-8')
+    raw_lines = file.readlines()
+    file.close()
+    os.chdir("../Source")
+    return raw_lines
+
+
+def ReadClearInpFile(raw_lines) -> list:
     """
     Чистим сеттинги от комментариев и пустых строчек
     :param file:
     :return:
     """
 
-    os.chdir("../Settings/" + settings_file_name + ".txt")
-    file = open(settings_file_name + '.txt', 'r', encoding='utf-8')
-    row_lines = file.readlines()
-    os.chdir("../Source")
-
-    row_lines[-1] = row_lines[-1] + "\n"
+    raw_lines[-1] = raw_lines[-1] + "\n"
     lines = []
     i = 0
-    while (i != len(row_lines)):
-        if row_lines[i][-1] == '\n':
-            line = row_lines[i][:-1]  # Убрали \n
+    while (i != len(raw_lines)):
+        if raw_lines[i][-1] == '\n':
+            line = raw_lines[i][:-1]  # Убрали \n
         for j in range(len(line)):  # Убираем комметарий со строки
             if line[j] == "#":
-                line = row_lines[i][:j]
+                line = raw_lines[i][:j]
                 break
         if line == "":  # Если осталась только пустота, то пропускаем эту строчку
-            del row_lines[i]
+            del raw_lines[i]
             continue
         i += 1
         lines.append(line)
-    window_height, window_width = ReadWindowSize(lines[0])
-    working_mode = SetWorkingMode(lines)
-    if working_mode[1]:
-        return lines[1:], None
-    elif working_mode[2]:
-        return None, lines[1:]
-    elif working_mode[0]:
-        pass
     return lines
 
 
@@ -156,45 +258,45 @@ def ReadWeightPatterns(lines):  # Передаем количество лини
         raise ValueError("ERROR in -> Read_input.py -> ReadWeightPatterns() Weight patterns are not created")
 
 
-def ReadSymbolsSettings(settings_file_name, reels_file_name):
-    lines = ReadClearInpFile(settings_file_name)
-    window_height, window_width = ReadWindowSize(lines[0])
-    current_line_index = 1
+def ReadSymbolSettings(symbol_lines, window_width):
+    current_line_index = 0
 
     sp_symbols = [defaultdict(list) for _ in range(window_width)]
     common_symbols = [defaultdict(list) for _ in range(window_width)]
 
-    #number_of_sp_symbols = [-1 for _ in range(number_of_reels)]
-    #dist_between_sp_symbols = [-1 for _ in range(number_of_reels)]
-    #number_of_common_symbols = [-1 for _ in range(number_of_reels)]
-
-
     for reel_index in range(window_width):
-        number_of_sp_symbols, dist_between_sp_symbols = ReadSpecialSymbolInfo(lines[current_line_index])
+        number_of_sp_symbols, dist_between_sp_symbols = ReadSpecialSymbolInfo(symbol_lines[current_line_index])
         current_line_index += 1
         for special_symbol_index in range(number_of_sp_symbols):
-            special_symbol, sp_symbol_stacks = ReadSpecialSymbolsStack(lines[current_line_index])
+            special_symbol, sp_symbol_stacks = ReadSpecialSymbolsStack(symbol_lines[current_line_index])
             sp_symbols[reel_index][special_symbol] = sp_symbol_stacks
             current_line_index += 1
 
-        number_of_common_symbols = ReadNumberofCommonSymbols(lines[current_line_index])
+        number_of_common_symbols = ReadNumberofCommonSymbols(symbol_lines[current_line_index])
         current_line_index += 1
         for common_symbol_index in range(number_of_common_symbols):
-            common_symbol, common_symbol_stacks = ReadCommonSymbolStack(lines[current_line_index])
+            common_symbol, common_symbol_stacks = ReadCommonSymbolStack(symbol_lines[current_line_index])
             common_symbols[reel_index][common_symbol] = common_symbol_stacks
             current_line_index += 1
+    return sp_symbols, common_symbols
+
+
+def ReadWeightSettings(weight_lines, window_height, window_width):
+    current_line_index = 0
+    percentage_for_all_reels = []
+    patterns_for_all_reels = []
+
+    for reel_index in range(window_width):
+        percentage_list = ReadPatternsPercentage(weight_lines[current_line_index])
+        percentage_for_all_reels.append(percentage_list)
+        current_line_index += 1
+        patterns = ReadWeightPatterns(weight_lines[current_line_index: current_line_index + window_width])
+        patterns_for_all_reels.append(patterns)
+        current_line_index += window_height
+    return percentage_for_all_reels, patterns_for_all_reels
 
 
 
-    window_height = -1
-    number_of_reels = -1
-    number_of_sp_symbols = []
-    number_of_common_symbols = []
-    dist_between_sp_symbols = []
-    sp_symbol = -1
-    number_of_sp_symbols = -1
-    dist_between_reel_info = 0
-    weight_percentage = []
 
 
 def ReadSettings(settings_path, reels_path):
