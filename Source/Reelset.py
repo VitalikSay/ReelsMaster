@@ -1,6 +1,6 @@
 from Source.Reel import Reel
 from Source.ReelData import ReelData
-from Source.Read_input import ReadReel
+from Source.Read_input import ReadReelset
 
 
 class Reelset():
@@ -35,6 +35,7 @@ class Reelset():
                 current_reel.ln = len(current_reel.symbols)
             self.reels.append(current_reel)
 
+
     def MakeWeights(self):
         if not self.reels:
             print("ERROR: There are no reels. Firstly create or read reels, then make weights.")
@@ -44,8 +45,9 @@ class Reelset():
                 reel.SetWeights([1 for _ in range(reel.ln)])
             else:
                 reel.MakeWeights(self.data.weight_patterns[i],
+                                 self.data.loop_indexes[i],
                                  self.data.weight_percentage[i],
-                                 self.data.number_of_reels)
+                                 self.data.window_height)
 
 
     def PrintReelset(self):

@@ -10,15 +10,8 @@ SETTING_FILE_NAME = "symbol_weight_settings"             # Только имя �
 REELS_FILE_NAME = "Reelset"                       # Только имя файла в папке Reels, путь и расширение не надо
 #################################################################################################
 
-os.chdir("Reels")
-if not os.path.isdir(GAME_NAME):
-     os.mkdir(GAME_NAME)
-os.chdir("..")
 
-
-
-reel_data = ReadSettings("Settings"+"/"+GAME_NAME+"/"+SETTING_FILE_NAME+".txt",
-                         "Reels"+"/"+GAME_NAME+"/"+REELS_FILE_NAME+".txt")
+reel_data = ReadSettings(SETTING_FILE_NAME, REELS_FILE_NAME, GAME_NAME)
 reelset = Reelset(reel_data)
 reelset.MakeReelSet()
 reelset.PrintReelset()

@@ -23,6 +23,7 @@ class ReelData:
         self.common_symbols = [] # Список словарей, каждый словарь отвечает за свой рил, ключ - символ, значение [кол-во стаков - длина стака]
 
         self.weight_percentage = []  # Список чисел, где каждое число - процент выпадения паттерна на этом риле
+        self.loop_indexes = []  # Индексы чисел в weight_percentage которые должные быть зациклены
         self.weight_patterns = []  # Список из N списков (N - кол-во рилов), в каждом из этих списков M списков (М - высота окна борда)
 
         self.read_symbol_weights = []  # Для режима работы при котором создаются только веса
@@ -118,8 +119,9 @@ class ReelData:
         self.short_info = short_info
 
 
-    def SetWeightInfo(self, weight_patterns, weight_percentage):
+    def SetWeightInfo(self, weight_patterns, loop_indexes, weight_percentage):
         self.weight_patterns = weight_patterns
+        self.loop_indexes = loop_indexes
         self.weight_percentage = weight_percentage
 
     def GetWeightPatterns(self, reel_ind):
