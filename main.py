@@ -5,8 +5,8 @@ from Source.Reelset import Reelset
 start_time = time.time()
 
 ###################################### НАДО ВОТ ЭТО ЗАДАТЬ ######################################
-GAME_NAME = "PoL"
-SETTING_FILE_NAME = "symbol_weight_settings"             # Только имя файла в папке Settings, путь и расширение не надо
+GAME_NAME = "CommonFeature"
+SETTING_FILE_NAME = "CM_trigger"             # Только имя файла в папке Settings, путь и расширение не надо
 REELS_FILE_NAME = "Reelset"                       # Только имя файла в папке Reels, путь и расширение не надо
 #################################################################################################
 

@@ -206,7 +206,7 @@ class Reel():
             weights_of_patterns = []
             for percent in weight_percentage:
                 weights_of_patterns.append(percent * self._weight_to_input / full_weight)
-        self._final_input_weight_by_patterns = [0 for _ in range(len(weight_patterns[0])+1)]
+        self._final_input_weight_by_patterns = [0 for _ in range(len(weight_patterns)+1)]
 
 
         while(weight_of_not_patterns > 0):
