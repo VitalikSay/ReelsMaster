@@ -4,8 +4,8 @@ from collections import defaultdict
 from Source.ReelData import ReelData
 
 
-def ReadSettings(settings_file_name, reels_file_name):
-    raw_settings_lines = ReadSettingsLines(settings_file_name)
+def ReadSettings(settings_file_name, reels_file_name, game_name):
+    raw_settings_lines = ReadSettingLines(settings_file_name, game_name)
     settings_lines = ReadClearInpFile(raw_settings_lines)
     working_mode = SetWorkingMode(settings_lines)
     window_height, window_width = ReadWindowSize(settings_lines[0])
@@ -14,17 +14,39 @@ def ReadSettings(settings_file_name, reels_file_name):
     if working_mode[0]:
         symbol_lines = FindSymbolSettings(settings_lines)
         weight_lines = FindPatternSettings(settings_lines)
-        special_symbols, common_symbols = ReadSymbolSettings(symbol_lines, window_width)
+        special_symbols, dst_bet_sp_symbosl, common_symbols = ReadSymbolSettings(symbol_lines, window_width)
         weight_percentage, weight_patterns = ReadWeightSettings(weight_lines, window_height, window_width)
-        MakeReelDataObject(working_mode, window_height, window_width)
+        reel_data_obj = MakeReelDataObject(working_mode,
+                                           window_height,
+                                           window_width,
+                                           special_symbols,
+                                           dst_bet_sp_symbosl,
+                                           common_symbols,
+                                           weight_percentage,
+                                           weight_patterns)
 
     elif working_mode[1]:
         symbol_lines = FindSymbolSettings(settings_lines)
-        common_symbols, special_symbols = ReadSymbolSettings(symbol_lines, window_width)
+        special_symbols, dst_bet_sp_symbosl, common_symbols = ReadSymbolSettings(symbol_lines, window_width)
+        reel_data_obj = MakeReelDataObject(working_mode,
+                                           window_height,
+                                           window_width,
+                                           sp_symbols=special_symbols,
+                                           dist_between_sp_symbols=dst_bet_sp_symbosl,
+                                           common_symbols=common_symbols)
 
     elif working_mode[2]:
+        reelset_settings, reels = ReadReelset(reels_file_name, game_name, window_width)
         weight_lines = FindPatternSettings(settings_lines)
         weight_percentage, weight_patterns = ReadWeightSettings(weight_lines, window_height, window_width)
+        reel_data_obj = MakeReelDataObject(working_mode,
+                                           window_height,
+                                           window_width,
+                                           weight_percentage=weight_percentage,
+                                           weight_patterns=weight_patterns,
+                                           reelset_settings=reelset_settings,
+                                           symbols_weights=reels)
+    return reel_data_obj
 
 
 def MakeReelDataObject(working_mode,
@@ -107,21 +129,23 @@ def FindPatternSettings(lines):
     return lines[first_pattern_set_index: last_pattern_set_index]
 
 
-def ReadSettingsLines(settings_file_name):
+def ReadSettingLines(settings_file_name, game_name):
     os.chdir("../Settings")
+    os.chdir(game_name)
     file = open(settings_file_name + '.txt', 'r', encoding='utf-8')
     raw_lines = file.readlines()
     file.close()
-    os.chdir("../Source")
+    os.chdir("../../Source")
     return raw_lines
 
 
-def ReadReelsetLines(reelset_file_name):
+def ReadReelsetLines(reelset_file_name, game_name):
     os.chdir("../Reels")
+    os.chdir(game_name)
     file = open(reelset_file_name + '.txt', 'r', encoding='utf-8')
     raw_lines = file.readlines()
     file.close()
-    os.chdir("../Source")
+    os.chdir("../../Source")
     return raw_lines
 
 
@@ -227,6 +251,7 @@ def ReadPatternsPercentage(line):
     for i, perc in enumerate(res):
         if perc[0] == '!':
             loop_pattern_indexes.append(i)
+            perc = perc[1:]
         pattern_weights.append(int(perc))
     return pattern_weights, loop_pattern_indexes
 
@@ -263,9 +288,11 @@ def ReadSymbolSettings(symbol_lines, window_width):
 
     sp_symbols = [defaultdict(list) for _ in range(window_width)]
     common_symbols = [defaultdict(list) for _ in range(window_width)]
+    dst_bet_spec_symbols = [0 for _ in range(window_width)]
 
     for reel_index in range(window_width):
         number_of_sp_symbols, dist_between_sp_symbols = ReadSpecialSymbolInfo(symbol_lines[current_line_index])
+        dst_bet_spec_symbols[reel_index] = dist_between_sp_symbols
         current_line_index += 1
         for special_symbol_index in range(number_of_sp_symbols):
             special_symbol, sp_symbol_stacks = ReadSpecialSymbolsStack(symbol_lines[current_line_index])
@@ -278,7 +305,7 @@ def ReadSymbolSettings(symbol_lines, window_width):
             common_symbol, common_symbol_stacks = ReadCommonSymbolStack(symbol_lines[current_line_index])
             common_symbols[reel_index][common_symbol] = common_symbol_stacks
             current_line_index += 1
-    return sp_symbols, common_symbols
+    return sp_symbols, dst_bet_spec_symbols, common_symbols
 
 
 def ReadWeightSettings(weight_lines, window_height, window_width):
@@ -290,7 +317,7 @@ def ReadWeightSettings(weight_lines, window_height, window_width):
         percentage_list = ReadPatternsPercentage(weight_lines[current_line_index])
         percentage_for_all_reels.append(percentage_list)
         current_line_index += 1
-        patterns = ReadWeightPatterns(weight_lines[current_line_index: current_line_index + window_width])
+        patterns = ReadWeightPatterns(weight_lines[current_line_index: current_line_index + window_height])
         patterns_for_all_reels.append(patterns)
         current_line_index += window_height
     return percentage_for_all_reels, patterns_for_all_reels
@@ -299,7 +326,7 @@ def ReadWeightSettings(weight_lines, window_height, window_width):
 
 
 
-def ReadSettings(settings_path, reels_path):
+def eReadSettings(settings_path, reels_path):
 
     inp_file = open(settings_path, 'r', encoding='utf-8')
     row_lines = inp_file.readlines()
@@ -517,7 +544,7 @@ def ReadSettings(settings_path, reels_path):
         Reel_Data.SetSpecialSymbolsInfo(sp_symbols, dist_between_sp_symbols)
         Reel_Data.SetCommonSymbolsInfo(common_symbols)
     elif working_mode[2]:
-        reelset_settings, symbols_weights = ReadReel(reels_path, number_of_reels)
+        reelset_settings, symbols_weights = ReadReelset(reels_path, game_name, number_of_reels)
         Reel_Data.SetWindowSize(window_height, number_of_reels)
         Reel_Data.SetWeightInfo(weight_patterns, weight_percentage)
         Reel_Data.read_symbol_weights = symbols_weights[0]
@@ -533,83 +560,64 @@ def ReadSettings(settings_path, reels_path):
     return Reel_Data
 
 
-def ReadReel(reelset_path: str, board_width: int):
-    inp_file = open(reelset_path, 'r', encoding='utf-8')
-    row_lines = inp_file.readlines()
-    row_lines[-1] = row_lines[-1] + "\n"
-    lines = []
-    number_of_reels = 0
-    number_of_reelsets = 0
-    reelset_settings_index = []
-    reelset_reels_index = []
-
-    ############# ЧИСТИМ ВХОДНОЙ ФАЙЛИК ОТ КОММЕНТАРИЕВ И ПУСТЫХ СТРОЧЕК #####################
+def ClearReelsetFile(raw_lines):
     i = 0
-    while (i != len(row_lines)):
-        if row_lines[i][-1] == '\n':
-            line = row_lines[i][:-1]  # Убрали \n
+    lines = []
+    while (i != len(raw_lines)):
+        line = raw_lines[i]
+        if line[-1] == '\n':
+            line = line[:-1]  # Убрали \n
         for j in range(len(line)):  # Убираем комметарий со строки
             if line[j] == "#":
-                line = row_lines[i][:j]
+                line = line[:j]
                 break
         if line == "":  # Если осталась только пустота, то пропускаем эту строчку
-            del row_lines[i]
+            del raw_lines[i]
             continue
-        if "<reelset " in line.lower():
-            number_of_reelsets += 1
-            reelset_settings_index.append(i)
-        if "<symbols>" in line.lower():
-            number_of_reels += 1
-            reelset_reels_index.append(i)
         i += 1
         lines.append(line)
+    return lines
 
-    ##########################################################################################
+
+def CountReels(lines):
+    symbol_indexes = []
+    for i, line in enumerate(lines):
+        if "<symbols>" in line.lower():
+            symbol_indexes.append(i)
+    return symbol_indexes
+
+
+def ReelsetSettingsIndex(lines):
+    for i, line in enumerate(lines):
+        if "<reelset " in line.lower():
+            return i
+    return -1
+
+
+def ReadReelset(reelset_file_name, game_name, board_width):
+    raw_lines = ReadReelsetLines(reelset_file_name, game_name)
+    lines = ClearReelsetFile(raw_lines)
+    symbol_indexes = CountReels(lines)
+    number_of_reels = len(symbol_indexes)
+    reelset_settings_line_index = ReelsetSettingsIndex(lines)
 
     working_without_reelset_settings = False
-    if number_of_reelsets == 0:
+    if reelset_settings_line_index == -1:
         working_without_reelset_settings = True
 
         if number_of_reels != board_width:
             print("\n!!!! ERROR in reading reelset from file: number of reels not equal to board width")
             return 0
 
-    if not working_without_reelset_settings:
-        if (number_of_reels / number_of_reelsets) != board_width:
-            print(number_of_reels / number_of_reelsets)
-            print("ERROR: Wrong reels. The number of reels is not equal to the width of the board in the settings")
-            return 0
+    reelset_settings = ReadReelsetSettings(lines[reelset_settings_line_index], working_without_reelset_settings)
 
-    reelset_settings = []
-    for j in reelset_settings_index:
-        reelset_settings_line = lines[j]
-        reelset_settings.append(ReadReelsetSettings(reelset_settings_line, working_without_reelset_settings))
+    symbols_weights = []
+    for reel_index in symbol_indexes:
+        symbols = ReadReelSymbols(lines[reel_index])
+        weights = ReadReelWeights(lines[reel_index + 1])
+        symbols_weights.append([symbols, weights])
 
-    symbols_weights_by_reelsets = [] # [[[[symbols], [weights]], [], [], [], []], [], [], []]
-
-    if not working_without_reelset_settings:
-        for reelset_index in reelset_settings_index:
-            current_index = reelset_index
-            reels = []
-            for reel_index in range(board_width):
-                current_index += 2 # Пропускаем <Reel>
-                symbols = ReadReelSymbols(lines[current_index])
-                current_index += 1
-                weights = ReadReelWeights(lines[current_index])
-                current_index += 1
-                reels.append([symbols, weights])
-            symbols_weights_by_reelsets.append(reels)
-
-    else:
-        reels = []
-        for reel_index in reelset_reels_index:
-            symbols = ReadReelSymbols(lines[reel_index])
-            weights = ReadReelWeights(lines[reel_index + 1])
-            reels.append([symbols, weights])
-        symbols_weights_by_reelsets.append(reels)
-    return reelset_settings, symbols_weights_by_reelsets
-
-
+    return reelset_settings, symbols_weights
 
 
 def ReadReelsetSettings(line, working_without_reelset_settings):
@@ -707,6 +715,5 @@ def ReadReelWeights(line):
 
 
 if __name__ == "__main__":
-    #ReadReel("../Reels/PoL/Reelset.txt", 5)
-    #ReadWindowSize(['3 5'])
-    print(SetWorkingMode(['','','2 [3 3]', ' 2 [3 3]']))
+    data = ReadSettings("symbol_weight_settings", "Reelset", "PoL")
+    print(data.number_of_reels)
