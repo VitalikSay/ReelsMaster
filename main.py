@@ -11,6 +11,7 @@ REELS_FILE_NAME = "Reelset"                       # Только имя файл
 #################################################################################################
 
 
+
 reel_data = ReadSettings(SETTING_FILE_NAME, REELS_FILE_NAME, GAME_NAME)
 reelset = Reelset(reel_data)
 reelset.MakeReelSet()
