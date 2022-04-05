@@ -208,7 +208,13 @@ def ReadWindowSize(line):
 
 def SetWorkingMode(lines):
     working_mode = [False, False, False]  # 0 - генерация и рилов и весов; 1 - генерация только рилов; 2 - генерация только весов
-    if re.match(r'\d{1,3}\s{0,5}\[', lines[2]):
+    symbol_settings_in_file = False;
+    for line in lines:
+        if re.match(r'\d{1,3}\s{0,5}\[', line):
+            symbol_settings_in_file = True
+            break
+
+    if symbol_settings_in_file:
         if re.match(r'.{0,5}\[\[', lines[-1]):
             working_mode[0] = True
         else:
