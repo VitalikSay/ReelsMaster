@@ -199,14 +199,23 @@ class Reel():
             weights_of_patterns.append(percent * self._weight_to_input / full_weight)
 
 
-        while (weight_of_not_patterns < self._pattern_counter[-1] or
-               not self._CompareWeightsAndPatternCounter(weights_of_patterns)):
-            self._weight_to_input *= 10
-            weight_of_not_patterns = int(self._weight_to_input * wei_of_not_patterns / full_weight)
-            weights_of_patterns = []
-            for percent in weight_percentage:
-                weights_of_patterns.append(percent * self._weight_to_input / full_weight)
-        self._final_input_weight_by_patterns = [0 for _ in range(len(weight_patterns)+1)]
+        if weight_of_not_patterns != 0:
+            while (weight_of_not_patterns < self._pattern_counter[-1] or
+                   not self._CompareWeightsAndPatternCounter(weights_of_patterns)):
+                self._weight_to_input *= 10
+                weight_of_not_patterns = int(self._weight_to_input * wei_of_not_patterns / full_weight)
+                weights_of_patterns = []
+                for percent in weight_percentage:
+                    weights_of_patterns.append(percent * self._weight_to_input / full_weight)
+            self._final_input_weight_by_patterns = [0 for _ in range(len(weight_patterns) + 1)]
+        else:
+            while (not self._CompareWeightsAndPatternCounter(weights_of_patterns)):
+                self._weight_to_input *= 10
+                weights_of_patterns = []
+                for percent in weight_percentage:
+                    weights_of_patterns.append(percent * self._weight_to_input / full_weight)
+            self._final_input_weight_by_patterns = [0 for _ in range(len(weight_patterns)+1)]
+
 
 
         while(weight_of_not_patterns > 0):
