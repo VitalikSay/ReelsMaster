@@ -67,7 +67,7 @@ class Reel():
         print("\nReel", self.index, "(total len", self.ln, ") pattern info: ")
         patterns_available = 0
         full_weight = sum(self._final_input_weight_by_patterns)
-        for i in range(-1, len(self._pattern_counter)-1):
+        for i in range(-1, len(self._pattern_counter)):
             if self._pattern_counter[i] > 0:
                 patterns_available += 1
             if i == -1:
@@ -143,6 +143,7 @@ class Reel():
                 self._pattern_indexes[true_index].append(i)
 
 
+
     def _CompareWeightsAndPatternCounter(self, weight_of_patterns):
         for i, weight in enumerate(weight_of_patterns):
             if weight < self._pattern_counter[i]:
@@ -199,6 +200,7 @@ class Reel():
             weights_of_patterns.append(percent * self._weight_to_input / full_weight)
 
 
+
         if weight_of_not_patterns != 0:
             while (weight_of_not_patterns < self._pattern_counter[-1] or
                    not self._CompareWeightsAndPatternCounter(weights_of_patterns)):
@@ -241,6 +243,7 @@ class Reel():
                     weight -= 1
                     if weight <= 0:
                         break
+
 
 
     def TakeWindow(self,i, window_height):
