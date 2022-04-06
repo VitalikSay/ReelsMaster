@@ -6,7 +6,7 @@ start_time = time.time()
 
 ###################################### НАДО ВОТ ЭТО ЗАДАТЬ ######################################
 GAME_NAME = "CommonFeature"
-SETTING_FILE_NAME = "cheap_before_elimination"             # Только имя файла в папке Settings, путь и расширение не надо
+SETTING_FILE_NAME = "uptrigger_after_elimination"             # Только имя файла в папке Settings, путь и расширение не надо
 REELS_FILE_NAME = "Reelset"                       # Только имя файла в папке Reels, путь и расширение не надо
 #################################################################################################
 
