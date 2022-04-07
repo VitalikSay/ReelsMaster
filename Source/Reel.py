@@ -70,7 +70,7 @@ class Reel():
         for i in range(-1, len(self._pattern_counter)):
             if self._pattern_counter[i] > 0:
                 patterns_available += 1
-            print("\tNumber of Patterns", i, ":", self._pattern_counter[i], "  (Weight", int(self._final_input_weight_by_patterns[i] * self._weight_to_input / full_weight), ":", '{:.2f}'.format(int(self._final_input_weight_by_patterns[i] * 100) / full_weight), "% )")
+            print("\tNumber of Patterns", i, ":", self._pattern_counter[i], "  (Weight", int(self._final_input_weight_by_patterns[i] * self._weight_to_input / full_weight), ":", '{:.4f}'.format(int(self._final_input_weight_by_patterns[i] * 100) / full_weight), "% )")
         print("\tTotal input weight:", full_weight, " (", patterns_available, "of", len(self._pattern_counter), "patterns available)")
 
 
