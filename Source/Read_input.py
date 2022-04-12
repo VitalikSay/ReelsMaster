@@ -4,7 +4,7 @@ from collections import defaultdict
 from Source.ReelData import ReelData
 
 
-def ReadSettings(settings_file_name, reels_file_name, game_name):
+def ReadSettings(settings_file_name, inner_directory, reels_file_name, game_name):
 
     reels_path = "Reels"
     source_path = ".."
@@ -14,9 +14,16 @@ def ReadSettings(settings_file_name, reels_file_name, game_name):
     os.chdir(reels_path)
     if not os.path.isdir(game_name):
         os.mkdir(game_name)
+
+    if inner_directory != "":
+        os.chdir(game_name)
+        if not os.path.isdir(inner_directory):
+            os.mkdir(inner_directory)
+        os.chdir("..")
     os.chdir(source_path)
 
-    raw_settings_lines = ReadSettingLines(settings_file_name, game_name)
+    print(os.getcwd())
+    raw_settings_lines = ReadSettingLines(settings_file_name, game_name, inner_directory)
     settings_lines = ReadClearInpFile(raw_settings_lines)
     working_mode = SetWorkingMode(settings_lines)
     window_height, window_width = ReadWindowSize(settings_lines[0])
@@ -48,7 +55,7 @@ def ReadSettings(settings_file_name, reels_file_name, game_name):
                                            common_symbols=common_symbols)
 
     elif working_mode[2]:
-        reelset_settings, reels = ReadReelset(reels_file_name, game_name, window_width)
+        reelset_settings, reels = ReadReelset(reels_file_name, game_name, inner_directory, window_width)
         weight_lines = FindPatternSettings(settings_lines)
         weight_percentage, loop_indexes, weight_patterns = ReadWeightSettings(weight_lines, window_height, window_width)
         reel_data_obj = MakeReelDataObject(working_mode,
@@ -144,7 +151,7 @@ def FindPatternSettings(lines):
     return lines[first_pattern_set_index: last_pattern_set_index]
 
 
-def ReadSettingLines(settings_file_name, game_name):
+def ReadSettingLines(settings_file_name, game_name, inner_directory):
     settings_path = "Settings"
     source_path = "../../"
     if __name__ == "__main__":
@@ -152,14 +159,20 @@ def ReadSettingLines(settings_file_name, game_name):
         settings_path = "../Settings"
     os.chdir(settings_path)
     os.chdir(game_name)
+
+    if inner_directory != "":
+        os.chdir(inner_directory)
     file = open(settings_file_name + '.txt', 'r', encoding='utf-8')
     raw_lines = file.readlines()
     file.close()
+    if inner_directory != "":
+        os.chdir("..")
+
     os.chdir(source_path)
     return raw_lines
 
 
-def ReadReelsetLines(reelset_file_name, game_name):
+def ReadReelsetLines(reelset_file_name, game_name, inner_directory):
     reels_path = "Reels"
     source_path = "../../"
     if __name__ == "__main__":
@@ -167,9 +180,15 @@ def ReadReelsetLines(reelset_file_name, game_name):
         reels_path = "../Reels"
     os.chdir(reels_path)
     os.chdir(game_name)
+
+    if inner_directory != "":
+        os.chdir(inner_directory)
     file = open(reelset_file_name + '.txt', 'r', encoding='utf-8')
     raw_lines = file.readlines()
     file.close()
+    if inner_directory != "":
+        os.chdir("..")
+
     os.chdir(source_path)
     return raw_lines
 
@@ -386,8 +405,8 @@ def ReelsetSettingsIndex(lines):
     return -1
 
 
-def ReadReelset(reelset_file_name, game_name, board_width):
-    raw_lines = ReadReelsetLines(reelset_file_name, game_name)
+def ReadReelset(reelset_file_name, game_name, inner_directory, board_width):
+    raw_lines = ReadReelsetLines(reelset_file_name, game_name, inner_directory)
     lines = ClearReelsetFile(raw_lines)
     symbol_indexes = CountReels(lines)
     number_of_reels = len(symbol_indexes)
