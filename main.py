@@ -5,9 +5,9 @@ from Source.Reelset import Reelset
 start_time = time.time()
 
 ###################################### НАДО ВОТ ЭТО ЗАДАТЬ ######################################
-GAME_NAME = "NewSectionsCommonFeature"
-INNER_DIRECTORY = "Respin_3_after_elim"   # Имя папки внутри основной папки GAME_NAME, если таковой нет, то просто оставляй пустую строчку ""
-SETTING_FILE_NAME = "respin3_whistle_trigger_after_elim"             # Только имя файла в папке Settings, путь и расширение не надо
+GAME_NAME = "CommonFeature"
+INNER_DIRECTORY = ""   # Имя папки внутри основной папки GAME_NAME, если таковой нет, то просто оставляй пустую строчку ""
+SETTING_FILE_NAME = "CM_trigger"             # Только имя файла в папке Settings, путь и расширение не надо
 REELS_FILE_NAME = "Reelset"                       # Только имя файла в папке Reels, путь и расширение не надо
 #################################################################################################
 
