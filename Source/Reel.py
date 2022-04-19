@@ -190,6 +190,9 @@ class Reel():
                 weight_percentage[pat_index] = 0
         ################################################################################################################
 
+        if full_weight > self._weight_to_input:
+            self._weight_to_input = full_weight
+
         weight_of_not_patterns = int(self._weight_to_input * wei_of_not_patterns / full_weight)
         weights_of_patterns = []
         for percent in weight_percentage:
