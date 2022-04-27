@@ -332,7 +332,7 @@ class Reel():
                                                             dist_bet_sp_symbols)
 
         if len(sp_symbols_list) != 0:
-            print("\nWARNING !!! In reel not enough place to input special symbols,", len(sp_symbols_list), "special symbols not inserted.")
+            print("\nWARNING !!! In reel", self.index, "not enough place to input special symbols,", len(sp_symbols_list), "special symbols not inserted.")
         return ready_reel
 
 
