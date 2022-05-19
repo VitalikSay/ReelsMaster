@@ -8,7 +8,7 @@ start_time = time.time()
 ###################################### НАДО ВОТ ЭТО ЗАДАТЬ ######################################
 GAME_NAME = "CommonFeature"
 INNER_DIRECTORY = "NewNewCMReels"   # Имя папки внутри основной папки GAME_NAME, если таковой нет, то просто оставляй пустую строчку ""
-SETTING_FILE_NAME = "CF_3scat_34"             # Только имя файла в папке Settings, путь и расширение не надо
+SETTING_FILE_NAME = "CF_3scat_5"             # Только имя файла в папке Settings, путь и расширение не надо
 REELS_FILE_NAME = "CF_trigger_reelset"                       # Только имя файла в папке Reels, путь и расширение не надо
 #################################################################################################
 
@@ -19,7 +19,7 @@ reelset = Reelset(reel_data)
 reelset.MakeReelSet()
 
 symbls = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
-weight = [3,  3,  6,  8,  8,  5,  4,  3,  3,  2,  2,  2,  2]
+weight = [2,  2,  3,  8,  13,  15,  18,  15,  10,  8,  6,  4,  2]
 symb_lst = []
 for i in range(len(symbls)):
     for c in range(weight[i]):
