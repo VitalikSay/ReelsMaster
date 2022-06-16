@@ -65,6 +65,12 @@ class Reel():
 
     def _PrintPatternInfo(self, weight_percentage):
         print("\nReel", self.index, "(total len", self.ln, ") pattern info: ")
+
+        #Все веса единички
+        if (len(weight_percentage) == 1 and weight_percentage[0] == 1):
+            print("\tAll weights are 1")
+            return
+
         patterns_available = 0
         full_weight = sum(self._final_input_weight_by_patterns)
         for i in range(-1, len(self._pattern_counter)):
@@ -174,8 +180,13 @@ class Reel():
         if len(weight_percentage) != len(weight_patterns):
             print("\nERROR: Number of weight patterns not equal to number of weight percents in reel", self.index)
             return 0
-        percents_sum = sum(weight_percentage)
 
+        # Все веса единички:
+        if len(weight_percentage) == 1 and weight_percentage[0] == 1:
+            self.weights = [1 for _ in range(self.ln)]
+            return
+
+        percents_sum = sum(weight_percentage)
         full_weight, wei_of_not_patterns = self._CalcFullWeight(percents_sum)
         self.weights = [0 for _ in range(self.ln)]
 
