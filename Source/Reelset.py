@@ -1,6 +1,4 @@
 from Source.Reel import Reel
-from Source.ReelData import ReelData
-from Source.Read_input import ReadReelset
 
 
 class Reelset():
